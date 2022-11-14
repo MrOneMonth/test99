@@ -21,5 +21,60 @@
         <div class="title">VK GN2</div>
       </div>
     </div>
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    <script>
+      var ss;
+      ss = unityInstance;
+      vkBridge.send("VKWebAppInit", {});
+      
+      function showAd(adFormat, waterfall){
+        vkBridge.send("VKWebAppShowNativeAds", {ad_format:adFormat, use_waterfall:waterfall});
+        vkBridge.subscribe((e) => {
+        if(e.detail.type == 'VKWebAppShowNativeAdsResult' && e.detail.data.result == true) {
+            ss.SendMessage('VkBridge', 'ShowAdsResult', 'good');
+        }
+        if(e.detail.type == 'VKWebAppShowNativeAdsFailed') {
+           ss.SendMessage('VkBridge', 'ShowAdsResult', 'noGood');
+        }
+        });
+      }
+
+      function sendPost(text){
+          vkBridge.send("VKWebAppShowWallPostBox", {
+            "message": text
+          });
+      }
+
+      function storageSet(key, value) {
+        vkBridge.send("VKWebAppStorageSet", {"key": key, "value": value});
+      }
+
+      function storageGet(key){
+        vkBridge.send("VKWebAppStorageGet", {"keys": [key]});
+        vkBridge.subscribe((e) => {
+          if(e.detail.type == 'VKWebAppStorageGetResult') {
+            ss.SendMessage('VkBridge', 'StorageGetResult', e.detail.data.keys[0].value);
+          }
+          if(e.detail.type == 'VKWebAppStorageGetFailed') {
+            ss.SendMessage('VkBridge', 'StorageGetResult', 'error');
+          }
+        });
+
+      }
+
+      function ShowLeaderBoardBox(value){
+        vkBridge.send("VKWebAppShowLeaderBoardBox", {user_result:Number(value)})
+         .then(data => console.log(data.success))
+        .catch(error => console.log(error));
+       
+      }
+
+      function inviteFriend(){
+        vkBridge.send("VKWebAppShowInviteBox", {})
+         .then(data => console.log(data.success))  
+        .catch(error => console.log(error));
+       
+      }
+    </script>
   </body>
 </html>
